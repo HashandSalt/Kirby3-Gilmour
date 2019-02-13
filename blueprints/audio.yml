@@ -1,0 +1,56 @@
+title: Audio
+
+columns:
+  - width: 1/4
+    sections:
+      content:
+        type: fields
+        fields:
+          duration:
+            label: Duration
+            type: text
+            width: 1/2
+          track:
+            label: Track
+            type: text
+            width: 1/2
+  - width: 2/4
+    sections:
+      meta:
+        type: fields
+        fields:
+          title:
+            label: Title
+            type: text
+            width: 1/2
+          album:
+            label: Album
+            type: text
+            width: 1/2
+          artist:
+            label: Artist
+            type: text
+            width: 1/2
+          composer:
+            label: Composer
+            type: text
+            width: 1/2
+          genre:
+            label: Genre
+            type: text
+            width: 1/2
+          year:
+            label: Year
+            type: text
+            width: 1/2
+  - width: 1/4
+      sections:
+        albumart:
+          type: fields
+          fields:
+            cover:
+              label: Album Cover
+              type: files
+              layout: cards
+              min: 1
+              max: 1
