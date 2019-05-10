@@ -1,5 +1,7 @@
 title: Audio
 
+accept: audio/*
+
 columns:
   - width: 1/4
     sections:
@@ -48,7 +50,7 @@ columns:
         albumart:
           type: fields
           fields:
-            cover:
+            coverimg:
               label: Album Cover
               type: files
               layout: cards

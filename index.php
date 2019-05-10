@@ -14,8 +14,14 @@ require('vendor/james-heinrich/getid3/getid3/getid3.php');
 
 Kirby::plugin('hashandsalt/gilmour', [
 
-		// Blueprints
+		// Options
+		'options' => [
+'ripcover' => true,
+'imagetemplate' => 'imagefocus',
+		],
 
+
+		// Blueprints
 		'blueprints' => [
 		  // FILES
 		  'files/audio' => __DIR__ . '/blueprints/files/audio.yml',
@@ -23,74 +29,74 @@ Kirby::plugin('hashandsalt/gilmour', [
 
 		'fileMethods' => [
 
-		// Fetch info from the ID tag
-		'getIDtag' => function() {
-			$getID3 = new getID3;
-			$fetchid = $getID3->analyze($this->root());
-			getid3_lib::CopyTagsToComments($fetchid);
+				// Fetch info from the ID tag
+				'getIDtag' => function() {
+					$getID3 = new getID3;
+					$fetchid = $getID3->analyze($this->root());
+					getid3_lib::CopyTagsToComments($fetchid);
 
-			$data = $fetchid;
+					$data = $fetchid;
 
-			// Check existence...
-			$basicinfo = $data['comments_html']?? [];
+					// Check existence...
+					$basicinfo = $data['comments_html']?? [];
 
-			// Check for Album Artwork
-			if ($coverimg = $data['comments']['picture'][0]['data']?? []) {
-				$coverbase64 = 'data:image/jpeg;base64,'.base64_encode($coverimg);
-			}	else {
-  			$coverbase64 = '';
-			}
+					// Check for Album Artwork
+					if ($coverimg = $data['comments']['picture'][0]['data']?? []) {
+						$coverbase64 = 'data:image/jpeg;base64,'.base64_encode($coverimg);
+					}	else {
+		  			$coverbase64 = '';
+					}
 
-			// Duration and Artwork
-			$otherinfo = array(
-				'cover'			=> array($coverbase64),
-				'duration' 	=> array($data['playtime_string']),
-			);
+					// Duration and Artwork
+					$otherinfo = array(
+						'cover'			=> array($coverbase64),
+						'duration' 	=> array($data['playtime_string']),
+					);
 
-			// Merge all the info
-			$audioinfo = array_merge($basicinfo, $otherinfo);
+					// Merge all the info
+					$audioinfo = array_merge($basicinfo, $otherinfo);
 
-			if ($audioinfo) {
-				$audioinfo['track'] = $audioinfo['track_number'];
-				unset($audioinfo['track_number']);
-				$audioinfo['year'] = array(substr(implode('', $audioinfo['year']), 0, 4));
-			}
+					if ($audioinfo) {
+						$audioinfo['track'] = $audioinfo['track_number'];
+						unset($audioinfo['track_number']);
+						$audioinfo['year'] = array(substr(implode('', $audioinfo['year']), 0, 4));
+					}
 
-			return $audioinfo;
+					return $audioinfo;
 
-		},
+				},
 
-		// Work info from the ID tag
-		'id3' => function ($mediainfo = 'title') {
-			$audiodata = $this->getIDtag($this);
-			return implode('', $audiodata[$mediainfo]?? []) ;
-		},
+				// Work info from the ID tag
+				'id3' => function ($mediainfo = 'title') {
+					$audiodata = $this->getIDtag($this);
+					return implode('', $audiodata[$mediainfo]?? []) ;
+				},
 
-		// Get the Cover art from the MP3 File
-		'getIDart' => function() {
+				// Get the Cover art from the MP3 File
+				'getIDart' => function() {
 
-			// File Path
-			$contentpath = $this->parent()->root();
+					// File Path
+					$contentpath = $this->parent()->root();
 
-			// image file
-			$audioartfilename = substr($this->filename(), 0, -4) . '-art.jpg';
-			$audioartfilepath = $contentpath.'/'.$audioartfilename;
-			$audioart = explode( ',', $this->id3('cover'));
-			$audioartdecode = base64_decode($audioart[1]);
+					// image file
+					$audioartfilename = substr($this->filename(), 0, -4) . '-art.jpg';
+					$audioartfilepath = $contentpath.'/'.$audioartfilename;
+					$audioart = explode( ',', $this->id3('cover'));
+					$audioartdecode = base64_decode($audioart[1]);
 
-			// Meta File
-			$audioartmetafilename = substr($this->filename(), 0, -4) . '-art.jpg.txt';
-			$audioartmetafilepath = $contentpath.'/'.$audioartmetafilename;
-			$metacontent = 'template: imagefocus';
+					// Meta File
+					$audioartmetafilename = substr($this->filename(), 0, -4) . '-art.jpg.txt';
+					$audioartmetafilepath = $contentpath.'/'.$audioartmetafilename;
+					$metacontent = 'template: '.option('hashandsalt.gilmour.imagetemplate');
 
-			// Create Meta
-			F::write($audioartmetafilepath, $metacontent);
+					// Create Meta
+					F::write($audioartmetafilepath, $metacontent);
 
-			// Create Cover File
-			F::write($audioartfilepath, $audioartdecode);
+					// Create Cover File
+					F::write($audioartfilepath, $audioartdecode);
 
-			return $audioartfilename;
-		},
+					return $audioartfilename;
+				},
 
 	],
 
@@ -99,7 +105,9 @@ Kirby::plugin('hashandsalt/gilmour', [
 	'file.create:after' => function ($file) {
 
 		if (strpos($file->filename(), '.mp3') !== false) {
-				$cover = $file->getIDart();
+
+				$cover = option('hashandsalt.gilmour.ripcover') ? $file->getIDart() : ' ';
+
 				$file->update([
 					 'title' => $file->id3('title'),
 					 'artist' => $file->id3('artist'),
@@ -109,7 +117,7 @@ Kirby::plugin('hashandsalt/gilmour', [
 					 'composer' => $file->id3('composer'),
 					 'duration' => $file->id3('duration'),
 					 'track' => $file->id3('track'),
-					 'cover' => $cover,
+					 'coverimg' => $cover,
 				 ]);
 
 			 }

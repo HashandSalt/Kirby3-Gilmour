@@ -46,6 +46,14 @@ The following information will be available:
 * year
 * duration
 
+## Ripping Cover art
+
+You can toggle the generation of album cover artwork, and set the blueprint for cover art images by adding the following options to your config:
+
+```
+'hashandsalt.gilmour.ripcover' => true,
+'hashandsalt.gilmour.imagetemplate' => 'imageart',
+```
 
 ## Usage
 
