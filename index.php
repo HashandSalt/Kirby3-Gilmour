@@ -1,20 +1,27 @@
 <?php
 /**
  *
- * Audio File ID3 Plugin for Kirby 3
+ * Gilmour - Audio File ID3 Plugin for Kirby 3
  *
- * @version   0.0.1
+ * @version   0.0.5
  * @author    James Steel <https://hashandsalt.com>
  * @copyright James Steel <https://hashandsalt.com>
- * @link      https://github.com/HashandSalt/id3
+ * @link      https://github.com/HashandSalt/gilmour
  * @license   MIT <http://opensource.org/licenses/MIT>
  */
 
-require('lib/getid3/getid3.php');
+require('vendor/james-heinrich/getid3/getid3/getid3.php');
 
-Kirby::plugin('hashandsalt/id3', [
+Kirby::plugin('hashandsalt/gilmour', [
 
-	'fileMethods' => [
+		// Blueprints
+
+		'blueprints' => [
+		  // FILES
+		  'files/audio' => __DIR__ . '/blueprints/files/audio.yml',
+		],
+
+		'fileMethods' => [
 
 		// Fetch info from the ID tag
 		'getIDtag' => function() {

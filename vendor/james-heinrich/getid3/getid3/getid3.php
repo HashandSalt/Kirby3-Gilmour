@@ -250,7 +250,7 @@ class getID3
 	 */
 	protected $startup_warning = '';
 
-	const VERSION           = '1.9.16-201812050141';
+	const VERSION           = '1.9.17-201902071234';
 	const FREAD_BUFFER_SIZE = 32768;
 
 	const ATTACHMENTS_NONE   = false;
@@ -1438,6 +1438,7 @@ class getID3
 						}
 					}
 					if ($tag_key == 'picture') {
+						// pictures can take up a lot of space, and we don't need multiple copies of them; let there be a single copy in [comments][picture], and not elsewhere
 						unset($this->info[$comment_name]['comments'][$tag_key]);
 					}
 				}
@@ -1451,6 +1452,11 @@ class getID3
 
 				if ($this->option_tags_html) {
 					foreach ($this->info['tags'][$tag_name] as $tag_key => $valuearray) {
+						if ($tag_key == 'picture') {
+							// Do not to try to convert binary picture data to HTML
+							// https://github.com/JamesHeinrich/getID3/issues/178
+							continue;
+						}
 						$this->info['tags_html'][$tag_name][$tag_key] = getid3_lib::recursiveMultiByteCharString2HTML($valuearray, $this->info[$comment_name]['encoding']);
 					}
 				}
@@ -1459,8 +1465,7 @@ class getID3
 
 		}
 
-		// pictures can take up a lot of space, and we don't need multiple copies of them
-		// let there be a single copy in [comments][picture], and not elsewhere
+		// pictures can take up a lot of space, and we don't need multiple copies of them; let there be a single copy in [comments][picture], and not elsewhere
 		if (!empty($this->info['tags'])) {
 			$unset_keys = array('tags', 'tags_html');
 			foreach ($this->info['tags'] as $tagtype => $tagarray) {
@@ -1985,7 +1990,8 @@ abstract class getid3_handler
 		*/
 		$contents = '';
 		do {
-			if (($this->getid3->memory_limit > 0) && ($bytes > $this->getid3->memory_limit)) {
+			//if (($this->getid3->memory_limit > 0) && ($bytes > $this->getid3->memory_limit)) {
+			if (($this->getid3->memory_limit > 0) && (($bytes / $this->getid3->memory_limit) > 0.99)) { // enable a more-fuzzy match to prevent close misses generating errors like "PHP Fatal error: Allowed memory size of 33554432 bytes exhausted (tried to allocate 33554464 bytes)"
 				throw new getid3_exception('cannot fread('.$bytes.' from '.$this->ftell().') that is more than available PHP memory ('.$this->getid3->memory_limit.')', 10);
 			}
 			$part = fread($this->getid3->fp, $bytes);

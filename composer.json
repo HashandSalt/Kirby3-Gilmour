@@ -1,0 +1,24 @@
+{
+    "name": "hashandsalt/kirby-gilmore",
+    "description": "Kirby 3 Gilmore Plugin for working with files iwth ID3 tags",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "James Steel",
+            "email": "hello@hashandsalt.com"
+        }
+    ],
+    "require": {
+        "getkirby/composer-installer": "^1.1",
+        "james-heinrich/getid3": "^1.9"
+    },
+    "autoload": {
+    "psr-4": {
+        "hashandsalt\\gilmore\\": "src/"
+    }
+},
+    "config": {
+        "optimize-autoloader": true
+    }
+}
