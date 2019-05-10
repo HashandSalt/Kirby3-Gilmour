@@ -3,7 +3,7 @@
  *
  * Gilmour - Audio File ID3 Plugin for Kirby 3
  *
- * @version   0.0.5
+ * @version   0.0.6
  * @author    James Steel <https://hashandsalt.com>
  * @copyright James Steel <https://hashandsalt.com>
  * @link      https://github.com/HashandSalt/gilmour
