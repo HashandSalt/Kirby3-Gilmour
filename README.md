@@ -5,7 +5,7 @@ A small plugin to with ID3 tags on audio files.
 Features:
 
 * File method for querying the file directly and getting the info straight from the ID tag.
-* File hook that pulls the most useful into into a file meta on upload. This is quicker to retrieve.
+* File hook that pulls the most useful into into a file meta on upload. This is quicker to retrieve later.
 * Capable of ripping the Album Cover image embedded in the tag and storing it as a file in the panel (Oh yes!).
 
 ****
@@ -106,6 +106,10 @@ Loop through some files getting the data from meta:
 </div>
 <?php endforeach ?>
 ```
+
+## Why is it called Gilmour?
+
+There is only one guitarist in the world and his name is [David Gilmour](https://en.wikipedia.org/wiki/David_Gilmour).
 
 ## License
 
