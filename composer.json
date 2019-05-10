@@ -1,6 +1,6 @@
 {
-    "name": "hashandsalt/kirby-gilmore",
-    "description": "Kirby 3 Gilmore Plugin for working with files iwth ID3 tags",
+    "name": "hashandsalt/kirby-gilmour",
+    "description": "Kirby 3 Gilmour Plugin for working with files iwth ID3 tags",
     "type": "kirby-plugin",
     "license": "MIT",
     "authors": [
@@ -15,7 +15,7 @@
     },
     "autoload": {
     "psr-4": {
-        "hashandsalt\\gilmore\\": "src/"
+        "hashandsalt\\gilmour\\": "src/"
     }
 },
     "config": {

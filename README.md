@@ -1,4 +1,4 @@
-# Kirby Gilmour: Work Audio file ID3 Data
+# Kirby Gilmour : Work Audio file ID3 Data
 
 A small plugin to with ID3 tags on audio files.
 
