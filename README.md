@@ -72,7 +72,11 @@ Loop through some files getting the data directly:
 ```
 <?php foreach($page->audio() as $mp3direct): ?>
 <div class="album">
-<img src="<?= $mp3direct->id3('cover')?>">
+
+<?php if($coverimage = $mp3direct->cover()->tofile() ): ?>
+  <img alt="<?= $mp3direct->title() ?> - <?= $mp3direct->album() ?>" src="<?= $coverimage->url()  ?>">
+<?php endif ?>
+
   <ul>
     <li><?= $mp3direct->id3('album') ?></li>
     <li><?= $mp3direct->id3('artist') ?></li>
@@ -90,9 +94,13 @@ Loop through some files getting the data directly:
 Loop through some files getting the data from meta:
 
 ```
-<?php foreach($page->audio() as $mp3meta): ?>
+<?php foreach($page->audio() as $mp3meta):?>
 <div class="album">
-<img src="<?= $page->image($mp3meta->cover())->url()?>">
+
+<?php if($imagecover = $mp3meta->cover()->tofile() ): ?>
+  <img alt="<?= $mp3meta->title() ?> - <?= $mp3meta->album() ?>" src="<?= $imagecover->url()  ?>">
+<?php endif ?>
+
   <ul>
     <li><?= $mp3meta->album() ?></li>
     <li><?= $mp3meta->artist() ?></li>
