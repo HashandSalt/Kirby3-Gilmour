@@ -1,127 +1,122 @@
 <?php
 /**
- *
- * Gilmour - Audio File ID3 Plugin for Kirby 3
- *
- * @version   0.0.6
- * @author    James Steel <https://hashandsalt.com>
- * @copyright James Steel <https://hashandsalt.com>
- * @link      https://github.com/HashandSalt/gilmour
- * @license   MIT <http://opensource.org/licenses/MIT>
- */
+*
+* Gilmour - Audio File ID3 Plugin for Kirby 3
+*
+* @version   0.0.6
+* @author    James Steel <https://hashandsalt.com>
+* @copyright James Steel <https://hashandsalt.com>
+* @link      https://github.com/HashandSalt/gilmour
+* @license   MIT <http://opensource.org/licenses/MIT>
+*/
 
 require('vendor/james-heinrich/getid3/getid3/getid3.php');
 
 Kirby::plugin('hashandsalt/gilmour', [
+    // Options
+    'options' => [
+        'ripcover' => true,
+        'imagetemplate' => 'imagefocus',
+    ],
 
-		// Options
-		'options' => [
-'ripcover' => true,
-'imagetemplate' => 'imagefocus',
-		],
+    // Blueprints
+    'blueprints' => [
+        // Files
+        'files/audio' => __DIR__ . '/blueprints/files/audio.yml',
+    ],
 
+    'fileMethods' => [
+        // Fetch info from the ID tag
+        'getIDtag' => function() {
+            $getID3  = new getID3;
+            $fetchid = $getID3->analyze($this->root());
+            getid3_lib::CopyTagsToComments($fetchid);
 
-		// Blueprints
-		'blueprints' => [
-		  // FILES
-		  'files/audio' => __DIR__ . '/blueprints/files/audio.yml',
-		],
+            $data = $fetchid;
 
-		'fileMethods' => [
+            // Check existence...
+            $basicinfo = $data['comments_html']?? [];
 
-				// Fetch info from the ID tag
-				'getIDtag' => function() {
-					$getID3 = new getID3;
-					$fetchid = $getID3->analyze($this->root());
-					getid3_lib::CopyTagsToComments($fetchid);
+            // Check for Album Artwork
+            if ($coverimg = $data['comments']['picture'][0]['data']?? []) {
+                $coverbase64 = 'data:image/jpeg;base64,'.base64_encode($coverimg);
+            }    else {
+                $coverbase64 = '';
+            }
 
-					$data = $fetchid;
+            // Duration and Artwork
+            $otherinfo = array(
+                'cover'    => array($coverbase64),
+                'duration' => array($data['playtime_string']),
+            );
 
-					// Check existence...
-					$basicinfo = $data['comments_html']?? [];
+            // Merge all the info
+            $audioinfo = array_merge($basicinfo, $otherinfo);
 
-					// Check for Album Artwork
-					if ($coverimg = $data['comments']['picture'][0]['data']?? []) {
-						$coverbase64 = 'data:image/jpeg;base64,'.base64_encode($coverimg);
-					}	else {
-		  			$coverbase64 = '';
-					}
+            if ($audioinfo) {
+                if (isset($audioinfo['track_number'])) {
+                    $audioinfo['track'] = $audioinfo['track_number'];
+                    unset($audioinfo['track_number']);
+                }
 
-					// Duration and Artwork
-					$otherinfo = array(
-						'cover'			=> array($coverbase64),
-						'duration' 	=> array($data['playtime_string']),
-					);
+                if (isset($audioinfo['year'])) {
+                    $audioinfo['year'] = array(substr(implode('', $audioinfo['year']), 0, 4));
+                }
+            }
 
-					// Merge all the info
-					$audioinfo = array_merge($basicinfo, $otherinfo);
+            return $audioinfo;
+        },
 
-					if ($audioinfo) {
-						$audioinfo['track'] = $audioinfo['track_number'];
-						unset($audioinfo['track_number']);
-						$audioinfo['year'] = array(substr(implode('', $audioinfo['year']), 0, 4));
-					}
+        // Work info from the ID tag
+        'id3' => function ($mediainfo = 'title') {
+            $audiodata = $this->getIDtag($this);
+            return implode('', $audiodata[$mediainfo]?? []) ;
+        },
 
-					return $audioinfo;
+        // Get the Cover art from the MP3 File
+        'getIDart' => function() {
+            // File Path
+            $contentpath = $this->parent()->root();
 
-				},
+            // image file
+            $audioartfilename = substr($this->filename(), 0, -4) . '-art.jpg';
+            $audioartfilepath = $contentpath.'/'.$audioartfilename;
+            $audioart = explode( ',', $this->id3('cover'));
+            $audioartdecode = base64_decode($audioart[1]);
 
-				// Work info from the ID tag
-				'id3' => function ($mediainfo = 'title') {
-					$audiodata = $this->getIDtag($this);
-					return implode('', $audiodata[$mediainfo]?? []) ;
-				},
+            // Meta File
+            $audioartmetafilename = substr($this->filename(), 0, -4) . '-art.jpg.txt';
+            $audioartmetafilepath = $contentpath.'/'.$audioartmetafilename;
+            $metacontent = 'template: '.option('hashandsalt.gilmour.imagetemplate');
 
-				// Get the Cover art from the MP3 File
-				'getIDart' => function() {
+            // Create Meta
+            F::write($audioartmetafilepath, $metacontent);
 
-					// File Path
-					$contentpath = $this->parent()->root();
+            // Create Cover File
+            F::write($audioartfilepath, $audioartdecode);
 
-					// image file
-					$audioartfilename = substr($this->filename(), 0, -4) . '-art.jpg';
-					$audioartfilepath = $contentpath.'/'.$audioartfilename;
-					$audioart = explode( ',', $this->id3('cover'));
-					$audioartdecode = base64_decode($audioart[1]);
-
-					// Meta File
-					$audioartmetafilename = substr($this->filename(), 0, -4) . '-art.jpg.txt';
-					$audioartmetafilepath = $contentpath.'/'.$audioartmetafilename;
-					$metacontent = 'template: '.option('hashandsalt.gilmour.imagetemplate');
-
-					// Create Meta
-					F::write($audioartmetafilepath, $metacontent);
-
-					// Create Cover File
-					F::write($audioartfilepath, $audioartdecode);
-
-					return $audioartfilename;
-				},
-
+            return $audioartfilename;
+        },
 	],
 
-'hooks' => [
+    'hooks' => [
+        'file.create:after' => function ($file) {
+            if (strpos($file->filename(), '.mp3') !== false) {
 
-	'file.create:after' => function ($file) {
+                $cover = option('hashandsalt.gilmour.ripcover') ? $file->getIDart() : ' ';
 
-		if (strpos($file->filename(), '.mp3') !== false) {
-
-				$cover = option('hashandsalt.gilmour.ripcover') ? $file->getIDart() : ' ';
-
-				$file->update([
-					 'title' => $file->id3('title'),
-					 'artist' => $file->id3('artist'),
-					 'album' => $file->id3('album'),
-					 'genre' => $file->id3('genre'),
-					 'year'  => $file->id3('year'),
-					 'composer' => $file->id3('composer'),
-					 'duration' => $file->id3('duration'),
-					 'track' => $file->id3('track'),
-					 'coverimg' => $cover,
-				 ]);
-
-			 }
-	},
-]
-
+                $file->update([
+                    'title'    => $file->id3('title'),
+                    'artist'   => $file->id3('artist'),
+                    'album'    => $file->id3('album'),
+                    'genre'    => $file->id3('genre'),
+                    'year'     => $file->id3('year'),
+                    'composer' => $file->id3('composer'),
+                    'duration' => $file->id3('duration'),
+                    'track'    => $file->id3('track'),
+                    'coverimg' => $cover,
+                ]);
+            }
+        },
+    ],
 ]);
